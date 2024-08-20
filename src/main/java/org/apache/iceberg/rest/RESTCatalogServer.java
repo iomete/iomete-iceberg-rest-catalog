@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.iceberg.CatalogProperties;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 public class RESTCatalogServer {
   private static final Logger LOG = LoggerFactory.getLogger(RESTCatalogServer.class);
   private static final String CATALOG_ENV_PREFIX = "CATALOG_";
+  public static final String CATALOG_NAME = "catalog-name";
 
   private RESTCatalogServer() {}
 
@@ -80,8 +82,11 @@ public class RESTCatalogServer {
       LOG.info("No warehouse location set.  Defaulting to temp location: {}", warehouseLocation);
     }
 
+    String catalogName = catalogProperties.get(CATALOG_NAME);
+    Objects.requireNonNull(catalogName, "Catalog name location must be specified");
+
     LOG.info("Creating catalog with properties: {}", catalogProperties);
-    return new CatalogContext(CatalogUtil.buildIcebergCatalog("rest_backend", catalogProperties, new Configuration()), catalogProperties);
+    return new CatalogContext(CatalogUtil.buildIcebergCatalog(catalogName, catalogProperties, new Configuration()), catalogProperties);
   }
 
   public static void main(String[] args) throws Exception {
